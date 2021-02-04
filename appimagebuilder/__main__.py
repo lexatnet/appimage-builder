@@ -15,13 +15,10 @@ import argparse
 import logging
 import os
 
-from appimagebuilder.common import shell
 from appimagebuilder import recipe
-from appimagebuilder.builder.builder import Builder
-from appimagebuilder.appimage import AppImageCreator
+from appimagebuilder.builder.planner_v1 import PlannerV1
 from appimagebuilder.generator.generator import RecipeGenerator
 from appimagebuilder.tester import ExecutionTest
-from appimagebuilder.tester.errors import TestFailed
 
 
 def __main__():
@@ -78,44 +75,28 @@ def __main__():
         generator.generate()
         exit(0)
 
+    _run_build(args, logger)
+
+
+def _run_build(args, logger):
     recipe_data = load_recipe(args.recipe)
     recipe_version = recipe_data.get_item("version")
+    steps = []
     if recipe_version == 1:
-        if not args.skip_script:
-            script_instructions = recipe_data.get_item("script", [])
-            logging.info("======")
-            logging.info("Script")
-            logging.info("======")
-            appdir = recipe_data.get_item("AppDir/path")
-            shell.execute(script_instructions, env={"APPDIR": os.path.abspath(appdir)})
-
-        if not args.skip_build:
-            creator = Builder(recipe_data)
-            creator.build()
-
-        if not args.skip_tests:
-            if recipe_data.get_item("AppDir/test", []):
-                logging.info("============")
-                logging.info("AppDir tests")
-                logging.info("============")
-
-                test_cases = _load_tests(recipe_data)
-                try:
-                    for test in test_cases:
-                        test.run()
-                except TestFailed as err:
-                    logger.error("Tests failed")
-                    logger.error(err)
-
-                    exit(1)
-
-        if not args.skip_appimage:
-            creator = AppImageCreator(recipe_data)
-            creator.create()
+        planner = PlannerV1(recipe_data)
+        planner.skip_script = args.skip_script
+        planner.skip_build = args.skip_build
+        planner.skip_tests = args.skip_tests
+        planner.skip_appimage = args.skip_appimage
+        steps = planner.plan()
     else:
         logger.error("Unknown recipe version: %s" % recipe_version)
         logger.info("Please make sure you're using the latest appimage-builder version")
         exit(1)
+
+    for step in steps:
+        logger.info(step.title)
+        step.run()
 
 
 def _load_tests(recipe_data):

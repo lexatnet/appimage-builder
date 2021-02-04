@@ -1,8 +1,10 @@
 version: 1
+script:
+  - echo "main script"
+  - echo "BUILD_DIR $BUILD_DIR"
+  - echo "APPDIR $APPDIR"
 
 AppDir:
-  path: ./AppDir
-
   app_info:
     id: org.gnu.bash
     name: bash
@@ -11,6 +13,10 @@ AppDir:
     exec: bin/bash
     exec_args: $@
 
+  before_bundle:
+    - echo "before_bundle script"
+    - echo "BUILD_DIR $BUILD_DIR"
+    - echo "APPDIR $APPDIR"
   apt:
     arch: i386
     allow_unauthenticated: true
@@ -24,6 +30,10 @@ AppDir:
     exclude:
       - libpcre3
 
+  after_bundle:
+    - echo "after_bundle script"
+    - echo "BUILD_DIR $BUILD_DIR"
+    - echo "APPDIR $APPDIR"
   test:
     debian:
       image: appimagecrafters/tests-env:debian-stable

@@ -9,3 +9,11 @@
 #
 #  The above copyright notice and this permission notice shall be included in
 #  all copies or substantial portions of the Software.
+
+
+class Step:
+    def __init__(self, title):
+        self.title = title
+
+    def run(self):
+        pass
