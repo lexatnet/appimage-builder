@@ -13,6 +13,7 @@
 import logging
 import uuid
 from pathlib import Path
+import os
 
 from appimagebuilder.utils.finder import Finder
 from . import helpers
