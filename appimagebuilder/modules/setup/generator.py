@@ -149,9 +149,9 @@ class RuntimeGenerator:
     def _write_appdir_env(self, global_environment):
         apprun_env = Environment(
             {
-                "APPDIR": "$ORIGIN/",
+                "APPDIR": "$ORIGIN",
                 "APPIMAGE_UUID": None,
-                "EXEC_PATH": "$APPDIR/" + self.main_exec,
+                "EXEC_PATH": os.path.join("$APPDIR",self.main_exec),
                 "EXEC_ARGS": self.main_exec_args,
             }
         )
